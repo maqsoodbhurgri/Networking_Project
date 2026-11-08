@@ -1,0 +1,57 @@
+name: networking_project
+
+networks:
+  untrusted:
+    ipam: { config: [ { subnet: 10.10.30.0/24, gateway: 10.10.30.254 } ] }
+  lan:
+    ipam: { config: [ { subnet: 10.10.10.0/24, gateway: 10.10.10.254 } ] }
+  dmz:
+    ipam: { config: [ { subnet: 10.10.20.0/24, gateway: 10.10.20.254 } ] }
+  mgmt:
+    ipam: { config: [ { subnet: 10.10.99.0/24, gateway: 10.10.99.254 } ] }
+
+x-node: &node
+  build: ./images/node
+  image: netlab-node
+  cap_add: [NET_ADMIN]
+
+services:
+  router:
+    <<: *node
+    container_name: router
+    hostname: router
+    sysctls: [ net.ipv4.ip_forward=1 ]
+    networks:
+      untrusted: { ipv4_address: 10.10.30.1 }
+      lan:       { ipv4_address: 10.10.10.1 }
+      dmz:       { ipv4_address: 10.10.20.1 }
+      mgmt:      { ipv4_address: 10.10.99.1 }
+    command: sleep infinity
+
+  attacker:
+    <<: *node
+    container_name: attacker
+    hostname: attacker
+    networks: { untrusted: { ipv4_address: 10.10.30.10 } }
+    command: sh -c "ip route replace default via 10.10.30.1 && sleep infinity"
+
+  client1:
+    <<: *node
+    container_name: client1
+    hostname: client1
+    networks: { lan: { ipv4_address: 10.10.10.11 } }
+    command: sh -c "ip route replace default via 10.10.10.1 && sleep infinity"
+
+  client2:
+    <<: *node
+    container_name: client2
+    hostname: client2
+    networks: { lan: { ipv4_address: 10.10.10.12 } }
+    command: sh -c "ip route replace default via 10.10.10.1 && sleep infinity"
+
+  web:
+    <<: *node
+    container_name: web
+    hostname: web
+    networks: { dmz: { ipv4_address: 10.10.20.20 } }
+    command: sh -c "ip route replace default via 10.10.20.1 && service ssh start && nginx -g 'daemon off;'"
