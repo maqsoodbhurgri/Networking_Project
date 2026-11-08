@@ -94,6 +94,28 @@ services:
     ports: [ "3000:3000" ]
     restart: unless-stopped
 
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki
+    networks: { mgmt: { ipv4_address: 10.10.99.13 } }
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./monitoring/loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki_data:/loki
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: promtail
+    networks: { mgmt: { ipv4_address: 10.10.99.14 } }
+    command: -config.file=/etc/promtail/promtail.yml
+    volumes:
+      - ./monitoring/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+      - ./logs/suricata:/var/log/suricata:ro
+    depends_on: [loki]
+    restart: unless-stopped
+
 volumes:
   prom_data:
   grafana_data:
+  loki_data:
