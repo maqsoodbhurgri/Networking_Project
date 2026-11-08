@@ -26,7 +26,9 @@ services:
       lan:       { ipv4_address: 10.10.10.1 }
       dmz:       { ipv4_address: 10.10.20.1 }
       mgmt:      { ipv4_address: 10.10.99.1 }
-    command: sleep infinity
+    volumes:
+      - ./router/nftables.conf:/etc/nftables.conf:ro
+    command: sh -c "nft -f /etc/nftables.conf; sleep infinity"
 
   attacker:
     <<: *node
