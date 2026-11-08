@@ -65,12 +65,25 @@ services:
     depends_on: [router]
     restart: unless-stopped
 
+  suricata:
+    image: jasonish/suricata:latest
+    container_name: suricata
+    network_mode: "service:router"
+    depends_on: [router]
+    cap_add: [NET_ADMIN, NET_RAW, SYS_NICE]
+    command: -i ${UNTRUSTED_IF} -k none -S /etc/suricata/rules/local.rules
+    volumes:
+      - ./suricata/local.rules:/etc/suricata/rules/local.rules
+      - ./logs/suricata:/var/log/suricata
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     networks: { mgmt: { ipv4_address: 10.10.99.10 } }
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
       - prom_data:/prometheus
     ports: [ "9090:9090" ]
     restart: unless-stopped
