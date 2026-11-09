@@ -128,6 +128,16 @@ services:
     depends_on: [loki]
     restart: unless-stopped
 
+  blackbox:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox
+    network_mode: "service:router"
+    depends_on: [router]
+    command: --config.file=/etc/blackbox/blackbox.yml
+    volumes:
+      - ./monitoring/blackbox/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+    restart: unless-stopped
+
 volumes:
   prom_data:
   grafana_data:

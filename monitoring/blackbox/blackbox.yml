@@ -1,0 +1,7 @@
+modules:
+  http_2xx:
+    prober: http
+    timeout: 2s
+  icmp_ping:
+    prober: icmp
+    timeout: 2s
