@@ -1,0 +1,19 @@
+name: lint
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: YAML lint
+        run: |
+          pip install yamllint
+          yamllint -d relaxed docker-compose.yml monitoring
+      - name: Compose file valid
+        run: UNTRUSTED_IF=eth0 docker compose config > /dev/null
+      - name: Prometheus config and alert rules
+        run: |
+          docker run --rm --entrypoint promtool -v $PWD/monitoring/prometheus:/etc/prometheus prom/prometheus check config /etc/prometheus/prometheus.yml
+          docker run --rm --entrypoint promtool -v $PWD/monitoring/prometheus/rules:/rules prom/prometheus check rules /rules/lab.yml
+      - name: Suricata rule IDs unique
+        run: test -z "$(grep -o 'sid:[0-9]*' suricata/local.rules | sort | uniq -d)"
