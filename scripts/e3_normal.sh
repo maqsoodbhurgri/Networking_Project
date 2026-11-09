@@ -10,7 +10,7 @@ while [ $(date +%s) -lt $END ]; do
   docker exec attacker curl -s -o /dev/null http://10.10.20.20
   docker exec attacker curl -s -o /dev/null http://10.10.20.20/index.nginx-debian.html
   docker exec attacker ping -c 2 -q 10.10.20.20 > /dev/null
-  docker exec attacker nmap -Pn -p 22 10.10.20.20 > /dev/null
+  [ $((RANDOM % 10)) -eq 0 ] && docker exec attacker nmap -Pn -p 22 10.10.20.20 > /dev/null
   # internal users
   docker exec client1 curl -s -o /dev/null http://10.10.20.20
   docker exec client2 curl -s -o /dev/null http://10.10.20.20
