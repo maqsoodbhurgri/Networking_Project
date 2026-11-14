@@ -2,7 +2,7 @@ groups:
   - name: lab-detection
     rules:
       - alert: SuspiciousPacketRate
-        expr: rate(node_network_receive_packets_total{device="eth3"}[10s]) > 50
+        expr: rate(node_network_receive_packets_total{device="eth0"}[10s]) > 50
         for: 0s
         labels:
           severity: warning
@@ -10,7 +10,7 @@ groups:
         annotations:
           summary: "Untrusted zone packet rate above 50 pps (scan or flood)"
       - alert: FloodPacketRate
-        expr: rate(node_network_receive_packets_total{device="eth3"}[10s]) > 5000
+        expr: rate(node_network_receive_packets_total{device="eth0"}[10s]) > 5000
         for: 0s
         labels:
           severity: critical
